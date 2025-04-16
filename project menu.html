@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Project Manager</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        background: #f4f4f4;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: auto;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+      }
+
+      h2 {
+        margin-top: 0;
+      }
+
+      input,
+      textarea,
+      button {
+        display: block;
+        width: 100%;
+        margin-bottom: 10px;
+        padding: 8px;
+        font-size: 16px;
+      }
+
+      .project {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin-bottom: 10px;
+        cursor: pointer;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .task {
+        background: #e3e3e3;
+        padding: 5px;
+        margin: 5px 0;
+      }
+
+      .back-btn {
+        background: #444;
+        color: white;
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div id="project-list-view">
+        <h2>Create a New Project</h2>
+        <input type="text" id="project-name" placeholder="Project Name" />
+        <textarea
+          id="project-desc"
+          placeholder="Project Description"
+        ></textarea>
+        <button onclick="createProject()">Create Project</button>
+
+        <h2>All Projects</h2>
+        <div id="project-list"></div>
+      </div>
+
+      <div id="project-detail-view" class="hidden">
+        <h2 id="detail-title"></h2>
+        <p id="detail-desc"></p>
+
+        <h3>Add Task</h3>
+        <input type="text" id="task-input" placeholder="Task name" />
+        <button onclick="addTask()">Add Task</button>
+
+        <h3>Tasks</h3>
+        <div id="task-list"></div>
+
+        <button class="back-btn" onclick="goBack()">← Back to Projects</button>
+      </div>
+    </div>
+
+    <script>
+      const projects = [];
+
+      function createProject() {
+        const name = document.getElementById("project-name").value;
+        const desc = document.getElementById("project-desc").value;
+
+        if (!name || !desc) {
+          alert("Please enter both name and description");
+          return;
+        }
+
+        const newProject = {
+          name,
+          desc,
+          tasks: [],
+        };
+
+        projects.push(newProject);
+        document.getElementById("project-name").value = "";
+        document.getElementById("project-desc").value = "";
+        renderProjects();
+      }
+
+      function renderProjects() {
+        const list = document.getElementById("project-list");
+        list.innerHTML = "";
+
+        projects.forEach((project, index) => {
+          const div = document.createElement("div");
+          div.className = "project";
+          div.innerText = `${project.name}\n${project.desc}`;
+          div.onclick = () => showProjectDetail(index);
+          list.appendChild(div);
+        });
+      }
+
+      let currentProjectIndex = null;
+
+      function showProjectDetail(index) {
+        currentProjectIndex = index;
+        const project = projects[index];
+        document.getElementById("detail-title").innerText = project.name;
+        document.getElementById("detail-desc").innerText = project.desc;
+        document.getElementById("project-list-view").classList.add("hidden");
+        document
+          .getElementById("project-detail-view")
+          .classList.remove("hidden");
+        renderTasks();
+      }
+
+      function goBack() {
+        document.getElementById("project-list-view").classList.remove("hidden");
+        document.getElementById("project-detail-view").classList.add("hidden");
+      }
+
+      function addTask() {
+        const taskName = document.getElementById("task-input").value;
+        if (!taskName) return;
+
+        projects[currentProjectIndex].tasks.push(taskName);
+        document.getElementById("task-input").value = "";
+        renderTasks();
+      }
+
+      function renderTasks() {
+        const taskList = document.getElementById("task-list");
+        taskList.innerHTML = "";
+
+        projects[currentProjectIndex].tasks.forEach((task) => {
+          const div = document.createElement("div");
+          div.className = "task";
+          div.innerText = task;
+          taskList.appendChild(div);
+        });
+      }
+    </script>
+  </body>
+</html>

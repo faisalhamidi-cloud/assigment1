@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Project + Task Board</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        background: #f0f2f5;
+        margin: 0;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1000px;
+        margin: auto;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+      }
+
+      input,
+      textarea,
+      select,
+      button {
+        width: 100%;
+        padding: 8px;
+        margin: 5px 0 10px;
+      }
+
+      .section {
+        margin-bottom: 30px;
+      }
+
+      .project {
+        background: #eee;
+        padding: 10px;
+        margin-bottom: 10px;
+        cursor: pointer;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .task {
+        background: #dcdcdc;
+        margin: 5px 0;
+        padding: 5px;
+      }
+
+      .task-board {
+        display: flex;
+        gap: 20px;
+        overflow-x: auto;
+      }
+
+      .column {
+        flex: 1;
+        background: #f9f9f9;
+        padding: 10px;
+        border: 1px solid #ddd;
+        min-width: 200px;
+      }
+
+      .column h3 {
+        text-align: center;
+      }
+
+      .back-btn {
+        background: #444;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Create Project -->
+      <div class="section" id="project-section">
+        <h2>Create New Project</h2>
+        <input type="text" id="project-name" placeholder="Project Name" />
+        <textarea
+          id="project-desc"
+          placeholder="Project Description"
+        ></textarea>
+        <button onclick="createProject()">Create Project</button>
+
+        <h3>All Projects</h3>
+        <div id="project-list"></div>
+      </div>
+
+      <!-- Project Details -->
+      <div class="section hidden" id="project-detail">
+        <h2 id="detail-title"></h2>
+        <p id="detail-desc"></p>
+        <input type="text" id="task-name" placeholder="Task Name" />
+        <select id="task-status">
+          <option>Backlog</option>
+          <option>In Discussion</option>
+          <option>In Progress</option>
+          <option>Done</option>
+        </select>
+        <button onclick="addTask()">Add Task</button>
+        <div id="task-list"></div>
+        <button class="back-btn" onclick="goBack()">← Back</button>
+      </div>
+
+      <!-- Task Board -->
+      <div class="section">
+        <h2>Global Tasks Board</h2>
+        <div class="task-board" id="task-board">
+          <div class="column" id="backlog"><h3>Backlog</h3></div>
+          <div class="column" id="discussion"><h3>In Discussion</h3></div>
+          <div class="column" id="progress"><h3>In Progress</h3></div>
+          <div class="column" id="done"><h3>Done</h3></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const projects = [];
+      let currentProjectIndex = null;
+
+      function createProject() {
+        const name = document.getElementById("project-name").value;
+        const desc = document.getElementById("project-desc").value;
+        if (!name || !desc) {
+          alert("Name and Description required");
+          return;
+        }
+        projects.push({ name, desc, tasks: [] });
+        document.getElementById("project-name").value = "";
+        document.getElementById("project-desc").value = "";
+        renderProjects();
+        renderBoard();
+      }
+
+      function renderProjects() {
+        const list = document.getElementById("project-list");
+        list.innerHTML = "";
+        projects.forEach((proj, index) => {
+          const div = document.createElement("div");
+          div.className = "project";
+          div.innerText = `${proj.name} - ${proj.desc}`;
+          div.onclick = () => showProject(index);
+          list.appendChild(div);
+        });
+      }
+
+      function showProject(index) {
+        currentProjectIndex = index;
+        const proj = projects[index];
+        document.getElementById("detail-title").innerText = proj.name;
+        document.getElementById("detail-desc").innerText = proj.desc;
+        document.getElementById("project-section").classList.add("hidden");
+        document.getElementById("project-detail").classList.remove("hidden");
+        renderProjectTasks();
+      }
+
+      function goBack() {
+        document.getElementById("project-section").classList.remove("hidden");
+        document.getElementById("project-detail").classList.add("hidden");
+      }
+
+      function addTask() {
+        const name = document.getElementById("task-name").value;
+        const status = document.getElementById("task-status").value;
+        if (!name) return;
+        projects[currentProjectIndex].tasks.push({ name, status });
+        document.getElementById("task-name").value = "";
+        renderProjectTasks();
+        renderBoard();
+      }
+
+      function renderProjectTasks() {
+        const taskList = document.getElementById("task-list");
+        taskList.innerHTML = "";
+        const tasks = projects[currentProjectIndex].tasks;
+        tasks.forEach((task) => {
+          const div = document.createElement("div");
+          div.className = "task";
+          div.innerText = `${task.name} [${task.status}]`;
+          taskList.appendChild(div);
+        });
+      }
+
+      function renderBoard() {
+        const allTasks = [];
+        projects.forEach((p) => allTasks.push(...p.tasks));
+
+        // Clear all columns
+        ["backlog", "discussion", "progress", "done"].forEach((id) => {
+          document.getElementById(id).innerHTML = `<h3>${
+            document.getElementById(id).querySelector("h3").innerText
+          }</h3>`;
+        });
+
+        // Add tasks by status
+        allTasks.forEach((task) => {
+          let colId = "";
+          switch (task.status) {
+            case "Backlog":
+              colId = "backlog";
+              break;
+            case "In Discussion":
+              colId = "discussion";
+              break;
+            case "In Progress":
+              colId = "progress";
+              break;
+            case "Done":
+              colId = "done";
+              break;
+          }
+
+          const div = document.createElement("div");
+          div.className = "task";
+          div.innerText = task.name;
+          document.getElementById(colId).appendChild(div);
+        });
+      }
+    </script>
+  </body>
+</html>
